@@ -1,0 +1,218 @@
+\documentclass[10pt,a4paper,danish]{article}
+\usepackage[danish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xfrac}
+\usepackage[dot, autosize, outputdir="dotgraphs/"]{dot2texi}
+\usepackage{tikz}
+\usepackage{ulem}
+\usetikzlibrary{shapes}
+
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\rhead{\today}
+\rfoot{\thepage}
+\setlength\parskip{1em}
+\setlength\parindent{1em}
+
+%% Titel og forfatter
+\title{ITS - aflevering 1}
+\author{Søren Pilgård, 190689, vpb984\\
+René Løwe Jacobsen, 070192, vlx198}
+
+%% Start dokumentet
+\begin{document}
+
+%% Vis titel
+\maketitle
+\newpage
+
+%% Vis indholdsfortegnelse
+\tableofcontents
+\newpage
+
+\section{}
+% % spray() (kaldes i init)
+% kalder garbage collectoren
+% fylder \_sarrays med 2.808.685 * 11 = tal
+% fylder \_sleaks med 2.000.000 Leaks
+% fanger OutOfMemoryError
+
+% på en 32bits arkitektur optager det i hvertfald {(2808685 * 11 + 2000000) * 4
+% bytes = 131.6MB
+% (ikke medregnet pladsen selve Leaks objekterne fylder
+% Men da disse blot indeholder 4 referencer og et tal er de ikke specielt store.
+
+% spray gør dermed ikke rigtigt noget andet end at brænde CPUtid af.
+
+
+% 131582140
+% Leaks indeholder en reference
+
+\section{}
+
+\section{Sideværts bevægelser}
+
+\begin{verbatim}
+ipconfig /all
+\end{verbatim}
+Oplister TCP/IP konfigurationen for alle netværksinterfaces.
+På den måde kan hackeren se maskinens ip-adresser har på netværkene.
+
+\begin{verbatim}
+tasklist -v
+\end{verbatim}
+Oplister alle de programmer og services der eksekverer. v flaget giver ekstra
+mange informationer.
+
+\begin{verbatim}
+netstat -ano
+\end{verbatim}
+Fortæller hvilke aktive TCP og UDP forbindelser der er, samt hvilke porte der
+lyttes på. \texttt{-o} flaget giver proces ID'et med på programmerne bag.
+Sammen holdt med informationerne fra tasklist kan man dermed se hvilke
+programmer der snakker over hvilke forbindelser og porte på maskinen.
+
+Her efter snakker hackeren med en række services
+
+\begin{verbatim}
+net user
+\end{verbatim}
+Lister alle brugerne på maskinen.
+
+\begin{verbatim}
+net start
+\end{verbatim}
+Lister alle services der kører på systemet.
+
+\begin{verbatim}
+net share
+\end{verbatim}
+Viser information om alle de ressourcer på systemet der er delt på netværket.
+
+\begin{verbatim}
+net localgroup administrators
+\end{verbatim}
+Viser alle de brugere der er med i brugergruppen af administratorer.
+
+\begin{verbatim}
+net group "domain users" /domain
+\end{verbatim}
+Viser hvilke brugere der findes i gruppen \textit{domain users} på hele domænet.
+
+
+Det ses at \textit{enum.bat.txt} er et script der samler information om
+systemets programmer, trafik samt brugere og gemmer det i en tekstfil \texttt{C:\\WINNT\\Debug\\1.txt} som
+hackeren efterfølgende kan indsamle.
+
+Hackeren kunne have indsat en kommando der slettede scriptet når det blev kørt
+så det blev sværere for administratorene at finde ud af hvad hackeren foretog
+sig på systemet.
+
+\section{Lokal privilegiums forøgelse}
+
+Der er to fejl:
+
+For det første er programmet sårbart overfor ``format string'' angreb i kaldet
+\texttt{snprintf}.
+
+I kaldet kopieres \texttt{user\_input} over i \texttt{phone}, argumentet
+\texttt{sizeof(phone} sikrer at der ikke placeres data udenfor det allokerede
+array.
+
+Men når man benytter sig af snprintf fortolkes strengen og eventuelle special
+tegn evalueres og erstattes. Dermed kan en ondsindet bruger indsætte kommandoer
+i strengen der kan få programmet til at crashe eller endnuværre udlevere data
+fra hukommelsen ved at bruge \texttt{\%s} og \texttt{\%x}.
+
+Man kan rette denne fejl ved at rette linjen til:
+\begin{verbatim}
+snprintf(phone, sizeof(phone), "%s", user_input);
+\end{verbatim}
+Dermed bliver \texttt{user\_input} indsat som en streng som et argument til
+selve format strengen.
+
+
+Den anden fejl er at man bruger \texttt{gets} til at modtage data.
+\texttt{gets} læser data og gemmer det i \texttt{user\_input} indtil den møder et linjeskift eller et end-of-file
+tegn.
+Problemet er at vi ingen kontrol har med hvor mange tegn der rent faktisk bliver
+lagt ned i \texttt{user\_input}, dette er et problem da \texttt{user\_input} er
+et array med allokeret plads til 100 chars.
+
+Hvis en ondsindet bruger sender mere end 100 tegn begynder man dermed at skrive
+data i hukommelsen uden for arrayet.
+I bedste fald rammer man noget skrivebeskyttet hukommelse, i værste tilader det
+hackeren at overskriver returaddresen der ligger på stakken hvormed han kan
+styre hvorfra programmet skal eksekvere. På denne måde kan hackeren få adgang
+til at eksekvere arbitrær kode på maskinen og give ham shell-adgang.
+
+Da programmet kører som root via setuid, vil han have root adgang på hele
+maskinen.
+
+\section{Bagmændene}
+Nitro angrebene var en række angreb på forskellige internationale kemi firmaer,
+deriblandt en række danske.
+
+Nitro angrebene virkede ved at der blev sendt en mail til nogle af virksomhedens
+medarbejdere. Mailen havde en vedhæftet fil der indeholdt trojaneren PoisonIvy
+(en ``RAT'') der gav bagmændene adgang til
+den inficerede maskine. Filen lignede tilsyneladende en tekst fil men bestod i
+virkeligheden af en eksekverbar fil indeholdende trojaneren der efterfølgende
+forsøgte at ringe tilbage til en ``Command \& Control'' server der gav hackeren
+adgang til fjernstyring.
+Herfra lykkedes det dem at opsnappe informationer om
+brugere og passwords der gav dem mulighed for at hente den ønskede information
+fra serverne.
+
+Ifølge Symantec der opdagede angrebene, var formålet formententligt industri
+spionage. Symantec har ligeledes identificeret en af bagmændene fra Kina.
+
+Symantecs rapport\cite{nitro-article} beskriver ligeledes i deres rapport at der i kølvandet har været en
+række andre lignende angreb fra tilsvarende grupper. Det er dermed svært at
+afgøre om bagmanden bag angrebet på BIOchem er dem fra nitro angrebene.
+Selvom den specifikke tekniske tilgang og filerne brugt til at starte angrebet
+er forskelligt er den generelle metode dog ens.
+
+Det kan dermed, med de nuværende informationer, ikke afgøres om det konkret er
+de samme personer der står bag angrebene, men man kan godt formode at motiverne
+er de samme og at formålet har været industri spionage mod BIOchem.
+
+
+Som med mange andre angreb, har angrebsvektoren været igennem mails med
+medarbejderne.
+En oplagt tilgang til at begrænse fremtidige angreb er at uddanne brugerne til
+ikke at åbne filer fra ubetroede kilder.
+Eventuelt kan man sætte et filter op i mailserveren der helt filtrere sådanne
+mails fra, f.eks. ved at skanne indholdet af filerne igennem eller blokere for
+vedhæftninger fra mails udefra.
+
+
+
+\section{Litteraturliste}
+
+\begin{thebibliography}{9}
+\bibitem{marchewka} Jack T. Marchewka, \textit{\LaTeX: Information Technology
+    Project Management}.  John Wiley \& Sons, Inc.  3nd Edition, 2010.
+
+\bibitem{kontrakt} \textit{e-TL Kontrakt} 26. juni 2006
+
+\bibitem{windows} Microsoft, Command-line reference A-Z,
+  \url{http://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/ntcmds.mspx?mfr=true}.
+
+\bibitem{format} \textit{Format String Attacks},
+  \url{http://en.wikipedia.org/wiki/Format_string_attack}
+
+\bibitem{nitro-article} Symantec \textit{The Nitro Attacks,S
+tealing Secrets from the Chemical Industry} \url{http://www.symantec.com/content/en/us/enterprise/media/security_response/whitepapers/the_nitro_attacks.pdf}
+
+\end{thebibliography}
+
+\end{document}
