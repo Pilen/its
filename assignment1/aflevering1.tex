@@ -38,7 +38,29 @@ René Løwe Jacobsen, 070192, vlx198}
 \tableofcontents
 \newpage
 
-\section{}
+\section{Indledende infektions vektor}
+Når programmet starter, så tjekkes det først, hvorvidt \texttt{Security Manager}'eren
+er \texttt{null}. \texttt{Security Manager}'erens arbejde er at tjekke, hvorvidt
+der bliver lavet en ulovlig operation.
+Hvis den er \texttt{null} køres kode, der henter en EXE fil ned
+i tmp folderen. Filen bliver derefter eksekveret.
+Denne fil er formegentlig en fil, der giver en bagdør eller lign. til computeren.
+Hvis \texttt{Security Manager}'eren ikke er \texttt{null} bliver der kørt kode,
+der fylder den allokerede hukommelse op. Når hukommelsen er fyldt op, så er det
+muligt at regne en basis adresse, hvor man så kan finde andre hukommelsesadresser
+ud fra.
+Det er den statiske metode \texttt{spray()}, der sørger for det.
+Når det så er muligt at regne sig frem til bestemte positioner i hukommelsen
+finder programmet stedet, hvor \texttt{Security Manager}'eren ligger, som
+så bliver overskrevet.
+Når \texttt{Security Manager}'eren er overskrevet kan programmet, så hente den
+inficerede EXE fil ned.
+
+BIOchem kunne have ladet været med at have Java installeret på deres maskiner,
+da Java er et meget udsøgt mål pga. det kan køre på så mange platforme.
+Hvis det er nødvendigt for dem at have Java, så kan de køre det i virtuelle miljøer,
+der har begrænset adgang til resten af systemet.
+
 % % spray() (kaldes i init)
 % kalder garbage collectoren
 % fylder \_sarrays med 2.808.685 * 11 = tal
