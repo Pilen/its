@@ -52,6 +52,10 @@ René Løwe Jacobsen, 070192, vlx198}
 
 % spray gør dermed ikke rigtigt noget andet end at brænde CPUtid af.
 
+% Når spray har fyldt ram, så kan programmet regne sig frem til, hvor system biblioteket ligger.
+% Samt regne sig frem til, hvor SecurityManager klassen ligger og derefter overskrive den.
+% Når SecurityManager er overskrevet i RAM har de fulde rettigheder og kan derfor lægge en mere inficeret fil ned på disken og køre den.
+
 
 % 131582140
 % Leaks indeholder en reference
