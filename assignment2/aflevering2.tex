@@ -12,6 +12,7 @@
 \usepackage[dot, autosize, outputdir="dotgraphs/"]{dot2texi}
 \usepackage{tikz}
 \usepackage{ulem}
+\usepackage{lscape}
 \usetikzlibrary{shapes}
 
 \pagestyle{fancy}
@@ -39,8 +40,68 @@
 \newpage
 
 \section{Netværks opdeling}
+Den ekstra firewall er en god ting. Den giver en bedre opdeling af netværket, så
+en kompromiteret computer fra workstation netværket ikke har adgang til de
+interne servere, udover de ting, der er specificeret i opgaven.
+Det giver den fordel, at det er sværere at cracke de interne servere,
+selvom en cracker har adgang til en computer på workstation netværket.
+
+Vi er kommet frem til følgende firewallregler:
+
+\begin{landscape}
+\begin{verbatim}
+#!/bin/bash
+#BIOchem's new firewall
+
+#IP-addresses
+fw_eth1="10.10.1.1"
+fw_eth0="10.10.2.1"
+workstation_net="10.10.1.0/24"
+server_net="10.10.2.0/24"
+mail_srv="130.255.254.17"
+cluster="130.255.254.12"
+internal_dns="10.10.2.25"
+internal_ftp="10.10.2.33"
+intraweb="10.10.2.7"
+adminserver="10.10.2.25"
+
+#Specific rules
+iptables -A --state ESTABLISHED,RELATED -j ACCEPT # Allow connections already established
+iptables -A -d mail_srv -s workstation_net -p tcp --dport 25 -j ACCEPT --state NEW # SMTP
+iptables -A -d mail_srv -s workstation_net -p tcp,udp --dport 26 -j ACCEPT --state NEW # SMTP
+iptables -A -d mail_srv -s workstation_net -p tcp--dport 995 -j ACCEPT --state NEW # SSL-POP
+iptables -A -d mail_srv -s workstation_net -p tcp --dport 465 -j ACCEPT --state NEW # SSMTP
+iptables -A -d intraweb -s workstation_net -p tcp --dport 80 -j ACCEPT --state NEW # HTTP
+iptables -A -d intraweb -s workstation_net -p tcp --dport 443 -j ACCEPT --state NEW # HTTPS
+iptables -A -d internal_ftp -s workstation_net -p tcp,udp --dport 20 -j ACCEPT --state NEW # FTP data
+iptables -A -d internal_ftp -s workstation_net -p tcp --dport 21 -j ACCEPT --state NEW # FTP control
+iptables -A -d cluster -s workstation_net -p tcp,udp --dport 22 -j ACCEPT --state NEW # SSH
+iptables -A -d workstation_net -s adminserver -p icmp -j ACCEPT --state NEW # ping fra admin
+iptables -A -d server_net --dport 80 -j DROP --state NEW # drop HTTP to servernet
+iptables -A -d server_net --dport 443 -j DROP --state NEW # drop HTTPS to servernet
+iptables -A -d internal_dns -s workstation_net --dport 53 -j ACCEPT --state NEW
+iptables -A -s workstation_net --dport 80 -j ACCEPT # HTTP to internet
+iptables -A -s workstation_net --dport 443 -j ACCEPT # HTTPS to internet
+
+#Default policies
+iptables -A -s workstation_net -j DROP
+iptables -A -d workstation_net -j DROP
+
+#Save the rules
+# Her er det antaget, at det kører på et Debian baseret system
+iptables-save > /etc/iptables/rules.v4 # for IPv4
+iptables-save > /etc/iptables/rules.v6 # for IPv6
+\end{verbatim}
+\end{landscape}
 
 \section{Kompromittering af klyngens indgang}
+Udfra logfilen kan vi se, at angriberen har åbnet to SSH forbindelser ad gangen.
+Her forsøger han at gætte løsenet til root brugeren på serveren. Hvis det ikke
+lykkes på nogen af de to forbindelser efter 6 gange, så åbner han to nye igen og
+prøver på dem.
+Efter utallige forsøg får angriberen adgang til serveren på root brugeren, så
+reelt set er alle brugere kompromiterede på serveren, da root har adgang til
+alt.
 
 I logfilen ses det hvordan en person med ip adressen \texttt{109.196.143.60}
 forsøger at komme ind på systemet.
