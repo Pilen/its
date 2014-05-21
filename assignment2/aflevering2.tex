@@ -50,5 +50,92 @@ Der er fler
 
 \section{Brud på løsener}
 
+Vi har fået adgang til en hashet fil med brugernavne og password hashes.
+Vi ser at filen har formatet \textit{brugernavn} \texttt{:} \textit{tal}
+\texttt{:} \textit{hash 1} \texttt{:} \textit{hash 2} \texttt{:::}
+
+Der er 32 tegn i hvert hash med tegnene \textit{0-9+A-F}, det tyder på at det er
+hexadecimale tal. Vi har dermed:
+\[16^{32} = 2^{128}\]
+Det vil sige at vi i værste tilfælde har et hash på 128 bits, tilsvarende md5.
+
+I praksis viser det sig dog at selve sikkerheden er lavere.
+
+SAM filer viser sig at bestå af følgende format\cite{cracking}:\\
+\textit{brugernavn} \texttt{:} \textit{Security ID}
+\texttt{:} \textit{LM hash} \texttt{:} \textit{NTLM hash} \texttt{:::}
+\begin{itemize}
+\item \textit{Security ID}'et er et unikt tal per bruger.
+\item \textit{LM hash} er et hash givet ved LanMan hashing functionen
+\item \textit{NTLM hash} er et hash givet ved NTLanMan hashing functionen
+\end{itemize}
+
+LM hash er en forældet og brudt hashing funktion som normalt er deaktiveret
+hvorved feltet burde indeholde teksten ``\texttt{NO
+  PASSWORD*********************}''.
+
+Når dette ikke er tilfældet må LM hashing være slået til manuelt.
+Vi kan dermed bryde hashet, for det første ved vi at LM kun kigger på de første
+14 tegn i løsnet, hvis vi antager at der kun bruges ascii tegn vil der være 95
+printbare tegn hvilket giver \(95^{14} \approx 2^{92}\) bits.
+Desværre omdannes alle tegn til deres greltegns udgave hvilket giver \(69^{14}
+\approx 2^{86}\)
+
+Derudover bliver løsnet delt op i to grupper af 7 tegn hashet individuelt,
+for hver gruppe skal man bryde \(69^{7} \approx \ 2^{43}\).
+Hvis løsnet er på 7 tegn eller mindre er dette alt der skal brydes, hvis det er
+længere skal man bryde \(2 * 69^{7} \approx 2^{44}\) bits.
+
+At bryde 44 bits tager ikke lang tid.
+Specielt fordi man ikke bruger et ``salt'', dermed kan man opbygge en tabel én
+gang og så blot søge over denne, et såkaldt ``rainbowtable''.
+
+
+NTLM er heller ikke specielt sikker, Microsoft har selv meldt ud at man ikke bør
+bruge den. NTLM benytter som LM heller ikke et hash og kan dermed brydes med et
+rainbowtable.
+
+Det er trivielt at finde tjenester\cite{cracker1} \cite{cracker2} på nettet der, givet et LM eller NTLM hash, finder
+klarteksten.
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{ll}
+    \textit{Brugernavn} & \textit{Løsen} \\
+    \hline
+    Administrator & \texttt{@P0WNDK3*\{1!\}}\\
+    Anni & \texttt{Anni}\\
+    Lis & \texttt{nusser}\\
+    Peter & \texttt{bmwX5}\\
+    Support & \texttt{sommer2010}
+  \end{tabular}
+\end{table}
+
+For bedre at sikre løsenerne bør man slå LM hashing fra. Ligeledes bør man sikre
+sig at brugerne vælger løsener der er tilpas lange og sofistikerede (små, store
+og specialtegn).
+
+SAM er tilsyneladende generelt ikke en specielt sikker løsning. BIOchem bør i stedet se på om
+man ikke kan benytte \textit{Active Directory} i stedet.
+
+Passwords bør generelt hashes med en solid passwordhashing algoritme der er
+tilpas langsom og der bør benyttes et kryptografisk ``salt''.
+
+\section{Litteraturliste}
+
+\begin{thebibliography}{9}
+
+\bibitem{cracking}
+  \url{http://www.onlinehashcrack.com/how_to_crack_windows_passwords.php}, 21.
+  maj 2014.
+
+\bibitem{donotuse} Microsoft Developer Network,
+  \url{http://msdn.microsoft.com/en-us/library/cc236715.aspx}
+
+\bibitem{cracker1} \url{http://www.hashkiller.co.uk/ntlm-decrypter.aspx}
+\bibitem{cracker2} \url{http://rainbowtables.it64.com/}
+
+\end{thebibliography}
+
 
 \end{document}
