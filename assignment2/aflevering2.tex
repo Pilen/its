@@ -42,6 +42,63 @@
 
 \section{Kompromittering af klyngens indgang}
 
+I logfilen ses det hvordan en person med ip adressen \texttt{109.196.143.60}
+forsøger at komme ind på systemet.
+
+
+For det første bør man konfigurere sshd bedre.
+\texttt{PermitRootLogin} bør sættes som no, så man ikke kan logge ind som root
+bruger, maksimalt til en bruger på maskinen med sudo adgang.
+
+\texttt{PasswordAuthentication} skal sættes til no.
+Brugeres passwords er stortset altid elendige rent sikkerhedsmæsigt. I stedet
+bør brugerens offentlige sshnøgle tilføjes til listen af authentikerede nøgler.
+Derved kan man kun logge ind såfremt ens (lange) nøgle ligger på systemet, denne
+tager meget lang tid at bruteforce.
+
+\texttt{LoginGraceTime} bør sættes til en relativt lav værdi. Denne indstilling
+fortæller hvor lang tid der maksimalt må gå fra en bruger forbinder til der
+logges ind.
+
+Man kan derudover rykke den port som sshd lytter på til en anden end port 22.
+Det er ``Security through obscurity'', en dedikeret angriber vil blot lave et
+port scan og dermed finde frem til sshd porten. Men der er utroligt mange angreb
+der foregår via scripts der automatisk angriber ssh daemoner på port 22.
+Disse angreb løber bare hen over så mange maskiner som muligt og angriber port
+22 i et forsøg på f.eks. at opbygge et botnet.
+
+Man bør derudover overveje hvilke IP adresser der skal have adgang til at
+forbinde til maskinen. Dette kan gøres gennem firewallen der kan konfigureres
+til kun at tillade trafik til serveren inde fra netværket.
+For at give forskerne adgang hjemmefra kan man tillade deres hjemmeIP'er,
+alternativt kan der benyttes VPN til at forbinde forskernes hjemmenetværk til
+BIOchems.
+
+Derudover kan man konfigurere firewallen til at droppe forbindelser der for
+mange gange i træk prøver at forbinde til sshd porten
+
+f.eks. gør følgende opsætning\cite{portdrop} til IPtable at hvis der forbindes mere end 5 gange
+til porten inden for 60 sekunder, da bliver pakkerne droppet.
+\begin{verbatim}
+#!/bin/bash
+inet_if=eth1
+ssh_port=22
+$IPT -I INPUT -p tcp --dport ${ssh_port} -i ${inet_if} -m state --state NEW -m recent  --set
+$IPT -I INPUT -p tcp --dport ${ssh_port} -i ${inet_if} -m state --state NEW -m recent  --update --seconds 60 --hitcount 5 -j DROP
+\end{verbatim}
+
+
+THC Hydra er et program til automatisk at angribe en maskine, den får en ip og en
+port og så forsøger den at logge ind. Den bruger et dictionary af ord som den
+forsøger at angribe med.
+På den måde minder den om en avanceret udgave af de før omtalte scripts til
+automatiske angreb.
+
+For at gøre det sværre for BIOchem at finde ud af hvordan angrebet foregik,
+kunne man som root have slettet/redigeret loggen så man ikke kan se hvad der var
+sket.
+
+
 \section{Brud på løsener}
 
 Vi har fået adgang til en hashet fil med brugernavne og password hashes.
@@ -129,6 +186,7 @@ tilpas langsom og der bør benyttes et kryptografisk ``salt''.
 \bibitem{cracker1} \url{http://www.hashkiller.co.uk/ntlm-decrypter.aspx}
 \bibitem{cracker2} \url{http://rainbowtables.it64.com/}
 
+\bibitem{portdrop} \url{http://www.cyberciti.biz/tips/linux-unix-bsd-openssh-server-best-practices.html}
 \end{thebibliography}
 
 
