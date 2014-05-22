@@ -103,10 +103,7 @@ Efter utallige forsøg får angriberen adgang til serveren på root brugeren, s�
 reelt set er alle brugere kompromiterede på serveren, da root har adgang til
 alt.
 
-I logfilen ses det hvordan en person med ip adressen \texttt{109.196.143.60}
-forsøger at komme ind på systemet.
-
-
+Hvordan kunne man forhindre dette?
 For det første bør man konfigurere sshd bedre.
 \texttt{PermitRootLogin} bør sættes som no, så man ikke kan logge ind som root
 bruger, maksimalt til en bruger på maskinen med sudo adgang.
@@ -144,8 +141,12 @@ til porten inden for 60 sekunder, da bliver pakkerne droppet.
 #!/bin/bash
 inet_if=eth1
 ssh_port=22
-$IPT -I INPUT -p tcp --dport ${ssh_port} -i ${inet_if} -m state --state NEW -m recent  --set
-$IPT -I INPUT -p tcp --dport ${ssh_port} -i ${inet_if} -m state --state NEW -m recent  --update --seconds 60 --hitcount 5 -j DROP
+$IPT -I INPUT -p tcp --dport ${ssh_port} -i ${inet_if}
+                 -m state --state NEW -m recent  --set
+
+$IPT -I INPUT -p tcp --dport ${ssh_port} -i ${inet_if}
+               -m state --state NEW -m recent --update
+                     --seconds 60 --hitcount 5 -j DROP
 \end{verbatim}
 
 
