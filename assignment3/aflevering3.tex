@@ -39,7 +39,16 @@
 \tableofcontents
 \newpage
 
-\section{1}
+\section{Et online presserum}
+Det problem, der springer i øjnene er, at koden giver mulighed for at åbne en
+hvilken som helst fil på serveren, som den bruger webserveren kører på kan læse.
+Dette kan gøres ved at ændre på GET-parametret pub og bruge ../ for at gå tilbage
+mod roden på disken.
+
+Et fix til dette problem kunne være at putte PHP applikationen i et jail, så det
+ikke er muligt at komme udfra rodmappen for applikationen.
+Man kunne også gøre sådan, at man i stedet for lavede linksne til filerne
+direkte, så de ikke blev loaded af PHP.
 
 
 \section{2}
