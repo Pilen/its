@@ -188,8 +188,71 @@ May 20 13:53:00 130.255.254.1 %ASA-4-106023: Deny udp src outside:192.36.148.17/
   \label{fig:ddos-non-udp-activity}
 \end{figure}
 
+\newpage
 
-\section{4}
+\section{Office 365}
+Vi får at vide, at BIOchem gerne vil skifte deres nuværende Office løsning ud,
+så de ikke længere har en fysisk installation på hver maskine.
+De vil i stedet skifte til Office 365 for, at de ikke skal sørge for at opdatere
+Office pakkerne på computerne og derved undgå mulighederne for manglende patches
+giver problemer.
+
+Vi vil her komme med de ting vi mener, at vi bør have med, hvis vi skulle lave
+en sikkerhedsanalyse af BIOchems Office 365 valg.
+
+\subsection{Hvordan ser løsningen ud?}
+I denne del ville vi komme ind på, hvordan selve løsningen ser ud, så vi også
+selv har et overblik over, hvad det egentlig er vi arbejder med.
+Her kunne vi kigge på forskellige sikkerhedsrapporter omkring systemet og
+whitepapers, der evt. beskriver, hvordan systemet er bygget på.
+Dette vil give os en bedre mulighed for at komme med kvalificerede bud på
+evt. sikkerhedsproblemer.
+
+\subsection{Sikkerhedsmål}
+Her vil vi komme ind på, hvilke mål vi har for vores løsning. Det er vigtig,
+at de er veldefineret, så vi ikke skyder over eller under målet for, hvad
+vi gerne vil beskytte.
+
+\subsection{Hvad vil vi gerne beskytte?}
+I denne sektion kommer vi så ind på, hvad det er vi gerne vil beskytte.
+For hvert aktiv vi beskriver vil vi også beskrive dets værdi, hvilket
+kan være omkostningerne for at erstatte det, vigtigheden for virksomhedens
+funktion osv.
+Dette gør vi igen for at indskrænke og komme tættere på, hvilke reelle
+problemstillinger vi står overfor.
+
+\subsection{Risici}
+I denne del ville vi kigge på de enkelte trusler, som vi kunne forestille os,
+at der ville være i forbindelse med et skifte til Office 365 og hvordan det
+kunne påvirke BIOchem.
+
+Nogle af disse trusler kunne f.eks. være:
+\begin{description}
+    \item En bruger får kompromiteret sin adgang pga. et man-in-the-middle angreb.
+    \item En bruger med et dårligt løsen får kompromiteret sin adgang.
+    \item Microsofts backend bliver hacket og hackere får adgang til BIOchems data.
+\end{description}
+
+Disse problemstillinger ville vi så gennemgå hver for sig og komme med en
+vurdering af, hvor store problemer de evt. kunne skabe for BIOchem.
+Vi vil komme ind på omkostninger, hvis BIOchem løber ind i disse problemer,
+samt hvor sandsynlige de er og hvad der kan gøres for at undgå disse problemer.
+Vi vil også komme ind på, om der allerede er taget højde for nogle af disse ting
+i det nuværende system.
+
+Disse data vil vi så stille op i en risiko matrix, som giver et hurtigt overblik
+over, hvordan de forskellige risici er placeret i forhold til hinanden, så det
+er nemt at se, hvilket der bør reageres på.
+
+\subsection{Hvilke ting bør der reageres på?}
+Her vil vi komme ind på, hvilke trusler der bør reageres på. Her kan vi tage
+udgangspunkt i vores risiko matrix og kigge på de risici, der ligger på den
+forkerte ende af skalaen.
+
+\subsection{Opsummering}
+Til sidst vil vi komme med en opsummering af, hvad vi er kommet frem til igennem
+hele rapporten.
+
 
 \section{Litteraturliste}
 
