@@ -50,8 +50,64 @@ ikke er muligt at komme udfra rodmappen for applikationen.
 Man kunne også gøre sådan, at man i stedet for lavede linksne til filerne
 direkte, så de ikke blev loaded af PHP.
 
+\section{Adskillelse af opgaver}
+Til at starte med vil vi lige sige, at vi har antaget, at det løsen vi får
+ind er i hexadecimal form, hvilket også passer på løsenet vi får i opgaven.
 
-\section{2}
+For at løse problemet generelt har vi valgt at bruge Shamir's threshold secret
+sharing. Her har vi valgt at gøre det med en ret linje, da vi skal kunne komme
+tilbage til adgangskoden vha. 2 nøgler.
+
+Implementationen er skrevet i python og ser således ud:
+\begin{verbatim}
+"""
+These algorithms are based on Shamir's secret sharing.
+As we only need to keys to get the original, we'll be using a line.
+
+A key will look like this [x, y]
+"""
+import random
+
+def generateKeys(key, keysWanted):
+    a = random.randint(1,1000000000000)
+    b = int(key, 16)
+
+    keys = []
+    for i in range(0, keysWanted):
+        x = random.randint(1, 1000000000000)
+        y = str(a*x+b)
+        key = "0" * (len(y) - len(str(x))) + str(x) + str(y)
+        keys.append(key)
+
+    return keys
+
+def getOriginalKey(key1, key2):
+    x1 = int(key1[:len(key1)/2])
+    x2 = int(key2[:len(key2)/2])
+    y1 = int(key1[len(key1)/2:])
+    y2 = int(key2[len(key2)/2:])
+    a = (y2 - y1) / (x2 - x1)
+    b = y1 - x1 * a
+    return format(b, 'x')
+\end{verbatim}
+
+Kaldes \texttt{generateKeys} med argumenterne 1af84eb2c98 og 3, så kunne
+outputtet se således ud, \texttt{['00000001867731863824306470', '00000008381061900313283796', '00000007970061898010779596']}.
+Disse nøgler kan så sendes ud til hhv. BIOchem’s leder af kommunikationsafdeling,
+souschefen and højeststående pressemedarbejder.
+
+\subsection{Hvis en nøgle bliver kompromiteret}
+Hvis en nøgle bliver kompromiteret, så kan der genereres nye nøgler ved at kalde
+\texttt{generateKeys} med det samme input igen, hvilket burde give nye nøgler,
+der kan sendes ud til brugerne.
+Det er dog muligt, at der ved denne kørsel af \texttt{generateKeys} bliver lavet
+en linje med samme hældning, da hældningen for den gamle ikke er kendt og bliver
+"tilfældigt" genereret.
+Det kan være et problem, hvis en hacker har en keylogger på en af nøglehavernes
+maskiner og derved kan opsnappe en nøgle mere, så han har fuld adgang.
+For at undgå dette kan de køre \texttt{getOriginalKey} en gang med en af de
+gamle nøgler og en af de nye og se, om de evt. giver den rigtige. Hvis resultatet
+bliver det rigtige, så kan \texttt{generateKeys} køres igen.
 
 \section{3}
 
